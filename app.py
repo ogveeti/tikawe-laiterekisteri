@@ -77,20 +77,29 @@ def logout():
     return redirect(url_for("index"))
 
 
-#Route for listing all devices
+#Route for listing and sorting all devices
 @app.route("/list_devices")
 def devices():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    sql = "SELECT * FROM devices"
+    sort_by = request.args.get('sort_by', 'device_id')  #Sort by device_id by default
+    sort_order = request.args.get('sort_order', 'asc')  #Ascending order as default
+
+    #Validate user input
+    if sort_by not in ['device_id', 'type', 'manufacturer', 'status', 'location']:
+        sort_by = 'device_id'
+    if sort_order not in ['asc', 'desc']:
+        sort_order = 'asc'
+
+    sql = f"SELECT * FROM devices ORDER BY {sort_by} {sort_order}"
     devices = db.query(sql)
 
     devices = [dict(device) for device in devices]
     for device in devices:
-        device["status"] = DEVICE_STATUS_MAP.get(device["status"], "Tuntematon status")
+        device["status"] = DEVICE_STATUS_MAP.get(device["status"], "Unknown status")
 
-    return render_template("list_devices.html", devices=devices)
+    return render_template("list_devices.html", devices=devices, sort_by=sort_by, sort_order=sort_order)
 
 
 #Route for new device creation form
@@ -172,18 +181,16 @@ def edit_device(device_id):
     model = request.form["model"]
     manufacturer_serial = request.form["manufacturer_serial"]
     location = request.form["location"]
-    status = request.form["status"]
 
     sql = """UPDATE devices SET 
              type = ?, 
              manufacturer = ?, 
              model = ?, 
              manufacturer_serial = ?,
-             location = ?, 
-             status = ? 
+             location = ? 
              WHERE device_id = ?
          """
-    db.execute(sql, [type, manufacturer, model, manufacturer_serial, location, status, device_id])
+    db.execute(sql, [type, manufacturer, model, manufacturer_serial, location, device_id])
 
     return redirect(url_for("device_details", device_id=device_id))
 

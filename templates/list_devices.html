@@ -15,23 +15,34 @@
 </nav>
 
 <h2>Rekisteröidyt laitteet</h2>
-<ul>
-    {% for device in devices %}
-        <li>
-            <a href="{{ url_for('device_details', device_id=device.device_id) }}">
-                ID: {{ device.device_id }}
-                --
-                {{ device.type }}
-                --
-                {{ device.manufacturer }} {{ device.model }}
-                --
-                {{ device.location }}
-                --
-                {{ device.status }}
-            </a>
-        </li>
-    {% endfor %}
-</ul>
+<table cellspacing="10">
+    <thead>
+        <tr>
+            <th><a href="{{ url_for('devices', sort_by='device_id', sort_order='asc' if sort_order == 'desc' else 'desc') }}">ID</a></th>
+            <th><a href="{{ url_for('devices', sort_by='type', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Laitetyyppi</a></th>
+            <th><a href="{{ url_for('devices', sort_by='manufacturer', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Valmistaja</a></th>
+            <th><a href="{{ url_for('devices', sort_by='model', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Malli</a></th>
+            <th><a href="{{ url_for('devices', sort_by='location', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Sijainti</a></th>
+            <th><a href="{{ url_for('devices', sort_by='status', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Status</a></th>
+            <th><a href="{{ url_for('devices', sort_by='next_maintenance', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Määräpäivä</a></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for device in devices %}
+            <tr>
+                <td>{{ device.device_id }}</td>
+                <td>{{ device.type }}</td>
+                <td>{{ device.manufacturer }}</td>
+                <td>{{ device.model }}</td>
+                <td>{{ device.location }}</td>
+                <td>{{ device.status }}</td>
+                <td>{{ device.next_maintenance or '-' }}</td>
+                <td><a href="{{ url_for('device_details', device_id=device.device_id) }}">Lisätiedot</a></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 </body>
 </html>
