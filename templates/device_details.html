@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laitteen tiedot</title>
+</head>
+<body>
+<h1>Laitteen tiedot</h1>
+
+<p><strong>Tyyppi:</strong> {{ device.type }}</p>
+<p><strong>Valmistaja:</strong> {{ device.manufacturer }}</p>
+<p><strong>Malli:</strong> {{ device.model }}</p>
+<p><strong>Valmistajan sarjanumero:</strong> {{ device.manufacturer_serial }}</p>
+<p><strong>Sijainti:</strong> {{ device.location }}</p>
+<p><strong>Vastuuhenkilö:</strong> {{ device['owner_name'] }}</p>
+<p><strong>Tila:</strong> {{ device.status }}</p>
+<p><strong>Seuraava ajoitettu toimi:</strong> {{ device.next_maintenance or "Ei määritelty" }}</p>
+
+<a href="{{ url_for('edit_device_form', device_id=device['device_id']) }}">Muokkaa</a>
+
+<h2>Päivitä määräaikaistoimet</h2>
+
+<form action="{{ url_for('update_maintenance_status', device_id=device.device_id) }}" method="post">
+
+    <label>Määräaikaistoimien tila:</label>
+    <label>
+        <select name="status" required>
+            {% for key, value in device_status_map.items() %}
+                <option value="{{ key }}" {% if device.status == value %}selected{% endif %}>
+                    {{ value }}
+                </option>
+            {% endfor %}
+        </select>
+    </label><br>
+
+    <label>Seuraava määräaikaistoimi:</label>
+    <label>
+        <input type="date" name="next_maintenance" value="{{ device.next_maintenance }}">
+    </label><br>
+
+    <button type="submit">Päivitä</button>
+</form>
+
+<h2>Poista laite</h2>
+
+<form action="{{ url_for('delete_device', device_id=device.device_id) }}" method="post"
+      onsubmit="return confirm('Haluatko varmasti poistaa tämän laitteen?');">
+    <button type="submit">Poista</button>
+</form><br>
+
+<button type="button" onclick="window.location.href='{{ url_for('devices') }}'">Palaa takaisin</button>
+
+</body>
+</html>

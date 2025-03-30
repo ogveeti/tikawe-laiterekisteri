@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muokkaa perustietoja</title>
+</head>
+<body>
+<h1>Muokkaa perustietoja</h1>
+
+<form action="{{ url_for('edit_device', device_id=device['device_id']) }}" method="post"
+      onsubmit="return confirm('Haluatko varmasti tallettaa muutokset?');">
+    <label>Tyyppi:</label>
+    <label>
+        <input type="text" name="type" value="{{ device['type'] }}" required>
+    </label><br>
+
+    <label>Valmistaja:</label>
+    <label>
+        <input type="text" name="manufacturer" value="{{ device['manufacturer'] }}" required>
+    </label><br>
+
+    <label>Malli:</label>
+    <label>
+        <input type="text" name="model" value="{{ device['model'] }}" required>
+    </label><br>
+
+    <label>Valmistajan sarjanumero:</label>
+    <label>
+        <input type="text" name="manufacturer_serial" value="{{ device['manufacturer_serial'] }}" required>
+    </label><br>
+
+    <label>Sijainti:</label>
+    <label>
+        <input type="text" name="location" value="{{ device['location'] }}" required>
+    </label><br>
+
+    <button type="submit">Tallenna</button>
+</form><br>
+
+<button type="button" onclick="window.location.href='{{ url_for('device_details', device_id=device['device_id']) }}'">Peruuta</button>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirjaudu sisään</title>
+</head>
+<body>
+<h1>Kirjaudu sisään</h1>
+
+<form method="POST">
+    <label for="username">Käyttäjätunnus:</label>
+    <label>
+        <input type="text" name="username" required>
+    </label><br><br>
+
+    <label for="password">Salasana:</label>
+    <label>
+        <input type="password" name="password" required>
+    </label><br><br>
+
+    <button type="submit">Kirjaudu</button>
+</form>
+
+<button type="button" onclick="window.location.href='/'">Peruuta</button>
+
+</body>
+</html>

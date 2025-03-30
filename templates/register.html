@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luo tili</title>
+</head>
+<body>
+<h1>Luo uusi käyttäjätili</h1>
+
+<form method="POST">
+    <label for="username">Käyttäjänimi:</label>
+    <label>
+        <input type="text" name="username" required>
+    </label><br><br>
+
+    <label for="password1">Salasana:</label>
+    <label>
+        <input type="password" name="password1" required>
+    </label><br><br>
+
+    <label for="password2">Vahvista salasana:</label>
+    <label>
+        <input type="password" name="password2" required>
+    </label><br><br>
+
+    <button type="submit">Luo käyttäjä</button>
+</form>
+
+<button type="button" onclick="window.location.href='/'">Peruuta</button>
+
+</body>
+</html>

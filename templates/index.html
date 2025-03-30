@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etusivu</title>
+</head>
+<body>
+<h1>Tervetuloa laitehallintarekisteriin!</h1>
+
+{% if session.username %}
+    <h3>Olet kirjautuneena sisään käyttäjänä {{ session.username }}</h3>
+{% endif %}
+
+<nav>
+    {% if session.username %}
+        <a href="{{ url_for('devices') }}">Näytä laitteet</a>
+        <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
+    {% else %}
+        <a href="{{ url_for('register') }}">Rekisteröidy</a>
+        <a href="{{ url_for('login') }}">Kirjaudu sisään</a>
+    {% endif %}
+</nav>
+
+</body>
+</html>

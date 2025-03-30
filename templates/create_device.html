@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lisää uusi laite</title>
+</head>
+<body>
+<h1>Lisää uusi laite</h1>
+
+<form action="{{ url_for('create_device') }}" method="post">
+    <label>Tyyppi:</label>
+    <label>
+        <input type="text" name="type" required>
+    </label><br>
+
+    <label>Valmistaja:</label>
+    <label>
+        <input type="text" name="manufacturer" required>
+    </label><br>
+
+    <label>Malli:</label>
+    <label>
+        <input type="text" name="model" required>
+    </label><br>
+
+    <label>Valmistajan sarjanumero:</label>
+    <label>
+        <input type="text" name="manufacturer_serial" required>
+    </label><br>
+
+    <label>Sijainti:</label>
+    <label>
+        <input type="text" name="location" required>
+    </label><br>
+
+    <label>Status:</label>
+    <label>
+        <select name="status" required>
+            {% for key, value in device_status_map.items() %}
+                <option value="{{ key }}" {% if key == 4 %}selected{% endif %}>
+                    {{ value }}
+                </option>
+            {% endfor %}
+        </select>
+    </label><br><br>
+
+    <button type="submit">Lisää</button>
+    <button type="button" onclick="window.location.href='/list_devices'">Peruuta</button>
+
+</form>
+
+</body>
+</html>
