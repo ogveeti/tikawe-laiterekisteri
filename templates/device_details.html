@@ -8,6 +8,14 @@
 <body>
 <h1>Laitteen tiedot</h1>
 
+  {% for message in get_flashed_messages() %}
+      <div style="color: red;">
+        <p>
+            <b>VIRHE: {{ message }}</b>
+        </p>
+      </div>
+  {% endfor %}
+
 <p><strong>Tyyppi:</strong> {{ device.type }}</p>
 <p><strong>Valmistaja:</strong> {{ device.manufacturer }}</p>
 <p><strong>Malli:</strong> {{ device.model }}</p>

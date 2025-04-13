@@ -8,6 +8,14 @@
 <body>
 <h1>Muokkaa perustietoja</h1>
 
+  {% for message in get_flashed_messages() %}
+      <div style="color: red;">
+        <p>
+            <b>VIRHE: {{ message }}</b>
+        </p>
+      </div>
+  {% endfor %}
+
 <form action="{{ url_for('edit_device', device_id=device['device_id']) }}" method="post"
       onsubmit="return confirm('Haluatko varmasti tallettaa muutokset?');">
     <label>Tyyppi:</label>

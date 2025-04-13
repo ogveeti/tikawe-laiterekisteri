@@ -1,5 +1,6 @@
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, redirect, render_template, request, session, url_for, flash
 from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import datetime
 
 import config
 import db
@@ -29,18 +30,26 @@ def index():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form["username"]
+        username = request.form["username"].strip()
         password1 = request.form["password1"]
         password2 = request.form["password2"]
+        if not username:
+            flash("Käyttäjätunnus ei saa olla tyhjä")
+            return redirect(url_for("register"))
+        if not password1 or not password2:
+            flash("Salasana ei saa olla tyhjä")
+            return redirect(url_for("register"))
         if password1 != password2:
-            return "VIRHE: salasanat eivät ole samat"
+            flash("Salasanat eivät täsmää")
+            return redirect(url_for("register"))
         password_hash = generate_password_hash(password1)
 
         try:
             sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
             db.execute(sql, [username, password_hash])
         except:
-            return "VIRHE: käyttäjätunnus on jo varattu"
+            flash("Käyttäjätunnus on jo varattu")
+            return redirect(url_for("register"))
 
         return redirect(url_for("index"))
 
@@ -54,14 +63,18 @@ def login():
         return redirect(url_for('index'))
 
     if request.method == "POST":
-        username = request.form["username"]
+        username = request.form["username"].strip()
         password = request.form["password"]
 
-        sql = "SELECT user_id, password_hash FROM users WHERE username = ?"
-        user = db.query(sql, [username])
+        if not username or not password:
+            flash("Käyttäjätunnus ja salasana ovat pakollisia")
+            return redirect(url_for("login"))
+
+        user = db.query("SELECT user_id, password_hash FROM users WHERE username = ?", [username])
 
         if not user or not check_password_hash(user[0]["password_hash"], password):
-            return "VIRHE: väärä käyttäjätunnus tai salasana"
+            flash("Väärä käyttäjätunnus tai salasana")
+            return redirect(url_for("login"))
 
         session["user_id"] = user[0]["user_id"]
         session["username"] = username
@@ -154,6 +167,32 @@ def create_device():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    type = request.form["type"].strip()
+    manufacturer = request.form["manufacturer"].strip()
+    model = request.form["model"].strip()
+    manufacturer_serial = request.form["manufacturer_serial"].strip()
+    location = request.form["location"].strip()
+    status = request.form["status"]
+
+    if not type:
+        flash("Laitteen tyyppi on pakollinen")
+        return redirect(url_for("create_device"))
+    if not manufacturer:
+        flash("Valmistaja on pakollinen")
+        return redirect(url_for("create_device"))
+    if not model:
+        flash("Malli on pakollinen")
+        return redirect(url_for("create_device"))
+    if not manufacturer_serial:
+        flash("Sarjanumero on pakollinen")
+        return redirect(url_for("create_device"))
+    if not location:
+        flash("Sijainti on pakollinen")
+        return redirect(url_for("create_device"))
+    if not status.isdigit() or int(status) not in DEVICE_STATUS_MAP:
+        flash("Valittu tila ei ole kelvollinen")
+        return redirect(url_for("create_device"))
+
     sql = """INSERT INTO devices (
             type, 
             manufacturer, 
@@ -166,19 +205,19 @@ def create_device():
             VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)"""
 
     db.execute(sql, [
-        request.form["type"],
-        request.form["manufacturer"],
-        request.form["model"],
-        request.form["manufacturer_serial"],
-        request.form["location"],
+        type,
+        manufacturer,
+        model,
+        manufacturer_serial,
+        location,
         session["user_id"],
-        request.form["status"]
+        int(status)
     ])
 
     return redirect(url_for("devices"))
 
 
-#Route for diplaying detailed device info
+#Route for displaying detailed device info
 @app.route("/device/<int:device_id>")
 def device_details(device_id):
     sql = """SELECT devices.*,
@@ -213,11 +252,27 @@ def edit_device_form(device_id):
 #Route for posting the device information editing form
 @app.route("/devices/<int:device_id>/update", methods=["POST"])
 def edit_device(device_id):
-    type = request.form["type"]
-    manufacturer = request.form["manufacturer"]
-    model = request.form["model"]
-    manufacturer_serial = request.form["manufacturer_serial"]
-    location = request.form["location"]
+    type = request.form["type"].strip()
+    manufacturer = request.form["manufacturer"].strip()
+    model = request.form["model"].strip()
+    manufacturer_serial = request.form["manufacturer_serial"].strip()
+    location = request.form["location"].strip()
+
+    if not type:
+        flash("Laitteen tyyppi on pakollinen")
+        return redirect(url_for("edit_device"))
+    if not manufacturer:
+        flash("Valmistaja on pakollinen")
+        return redirect(url_for("edit_device"))
+    if not model:
+        flash("Malli on pakollinen")
+        return redirect(url_for("edit_device"))
+    if not manufacturer_serial:
+        flash("Sarjanumero on pakollinen")
+        return redirect(url_for("edit_device"))
+    if not location:
+        flash("Sijainti on pakollinen")
+        return redirect(url_for("edit_device"))
 
     sql = """UPDATE devices SET 
              type = ?, 
@@ -235,8 +290,24 @@ def edit_device(device_id):
 #Route for posting the device maintenance status update form
 @app.route("/device/<int:device_id>/update_maintenance_status", methods=["POST"])
 def update_maintenance_status(device_id):
-    status = request.form["status"]
-    next_maintenance = request.form["next_maintenance"] or None
+    try:
+        status = int(request.form["status"])
+        if status not in DEVICE_STATUS_MAP:
+            return "VIRHE: Virheellinen status", 400
+    except (ValueError, KeyError):
+        return "VIRHE: Status puuttuu tai ei ole kokonaisluku", 400
+
+    next_maintenance = request.form.get("next_maintenance", "").strip()
+    if next_maintenance:
+        try:
+            parsed_date = datetime.strptime(next_maintenance, "%Y-%m-%d")
+            next_maintenance = parsed_date.strftime("%Y-%m-%d")
+        except ValueError:
+            flash("Väärä päivämäärämuoto")
+            return redirect(url_for("device_details", device_id=device_id))
+    else:
+        next_maintenance = None
+
 
     sql = "UPDATE devices SET status = ?, next_maintenance = ? WHERE device_id = ?"
     db.execute(sql, [status, next_maintenance, device_id])
@@ -252,7 +323,8 @@ def delete_device(device_id):
     result = db.query(sql, [device_id])
 
     if not result or result[0]["owner_user_id"] != session["user_id"]:
-        return "VIRHE: Vain vastuuhenkilö voi poistaa laitteen", 403
+        flash("Vain vastuuhenkilö voi poistaa laitteen")
+        return redirect(url_for("device_details", device_id=device_id))
 
     # Delete device if check was successful
     db.execute("DELETE FROM devices WHERE device_id = ?", [device_id])

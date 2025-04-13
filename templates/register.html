@@ -8,6 +8,14 @@
 <body>
 <h1>Luo uusi käyttäjätili</h1>
 
+  {% for message in get_flashed_messages() %}
+      <div style="color: red;">
+        <p>
+            <b>VIRHE: {{ message }}</b>
+        </p>
+      </div>
+  {% endfor %}
+
 <form method="POST">
     <label for="username">Käyttäjänimi:</label>
     <label>

@@ -8,6 +8,14 @@
 <body>
 <h1>Lisää uusi laite</h1>
 
+  {% for message in get_flashed_messages() %}
+      <div style="color: red;">
+        <p>
+            <b>VIRHE: {{ message }}</b>
+        </p>
+      </div>
+  {% endfor %}
+
 <form action="{{ url_for('create_device') }}" method="post">
     <label>Tyyppi:</label>
     <label>

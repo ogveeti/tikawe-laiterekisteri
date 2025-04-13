@@ -8,6 +8,14 @@
 <body>
 <h1>Laiterekisteri</h1>
 
+  {% for message in get_flashed_messages() %}
+      <div style="color: red;">
+        <p>
+            <b>VIRHE: {{ message }}</b>
+        </p>
+      </div>
+  {% endfor %}
+
 <nav>
     <a href="{{ url_for('index') }}">Etusivu</a>
     <a href="{{ url_for('create_device_form') }}">Lisää uusi laite</a>
