@@ -21,7 +21,7 @@
 <p><strong>Malli:</strong> {{ device.model }}</p>
 <p><strong>Valmistajan sarjanumero:</strong> {{ device.manufacturer_serial }}</p>
 <p><strong>Sijainti:</strong> {{ device.location }}</p>
-<p><strong>Vastuuhenkilö:</strong> {{ device['owner_name'] }}</p>
+<p><strong>Vastuuhenkilö:</strong> {{ device["owner_name"] }}</p>
 <p><strong>Tila:</strong> {{ device.status }}</p>
 <p><strong>Seuraava ajoitettu toimi:</strong> {{ device.next_maintenance or "Ei määritelty" }}</p>
 

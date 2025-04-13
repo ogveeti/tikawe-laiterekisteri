@@ -15,13 +15,13 @@
         <table cellspacing="10">
             <thead>
                 <tr>
-                    <th><a href="{{ url_for('devices', sort_by='device_id', sort_order='asc' if sort_order == 'desc' else 'desc') }}">ID</a></th>
-                    <th><a href="{{ url_for('devices', sort_by='type', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Laitetyyppi</a></th>
-                    <th><a href="{{ url_for('devices', sort_by='manufacturer', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Valmistaja</a></th>
-                    <th><a href="{{ url_for('devices', sort_by='model', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Malli</a></th>
-                    <th><a href="{{ url_for('devices', sort_by='location', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Sijainti</a></th>
-                    <th><a href="{{ url_for('devices', sort_by='status', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Status</a></th>
-                    <th><a href="{{ url_for('devices', sort_by='next_maintenance', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Määräpäivä</a></th>
+                    <th><a href="{{ url_for("devices", sort_by="device_id", sort_order="asc" if sort_order == "desc" else "desc") }}">ID</a></th>
+                    <th><a href="{{ url_for("devices", sort_by="type", sort_order="asc" if sort_order == "desc" else "desc") }}">Laitetyyppi</a></th>
+                    <th><a href="{{ url_for("devices", sort_by="manufacturer", sort_order="asc" if sort_order == "desc" else "desc") }}">Valmistaja</a></th>
+                    <th><a href="{{ url_for("devices", sort_by="model", sort_order="asc" if sort_order == "desc" else "desc") }}">Malli</a></th>
+                    <th><a href="{{ url_for("devices", sort_by="location", sort_order="asc" if sort_order == "desc" else "desc") }}">Sijainti</a></th>
+                    <th><a href="{{ url_for("devices", sort_by="status", sort_order="asc" if sort_order == "desc" else "desc") }}">Status</a></th>
+                    <th><a href="{{ url_for("devices", sort_by="next_maintenance", sort_order="asc" if sort_order == "desc" else "desc") }}">Määräpäivä</a></th>
                     <th></th>
                 </tr>
             </thead>
