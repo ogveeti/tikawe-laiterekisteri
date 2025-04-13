@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Käyttäjät</title>
+</head>
+<body>
+    <h1>Rekisteröityjä käyttäjiä: {{ user_count }} kpl.</h1>
+
+    <ul>
+        {% for user in users %}
+            <li>
+                <a href="{{ url_for('user_page', user_id=user.user_id) }}">
+                    {{ user.username }}
+                </a> -- {{ user.device_count }} laitetta
+            </li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="{{ url_for('index') }}">Takaisin etusivulle</a></p>
+</body>
+</html>

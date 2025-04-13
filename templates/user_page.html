@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Käyttäjän {{ user.username }} sivu</title>
+</head>
+<body>
+    <h1>Käyttäjä: {{ user.username }}</h1>
+
+    <p><strong>Viimeisin kirjautuminen:</strong> {{ user.last_login or "Ei tietoa" }}</p>
+
+    <h2>Käyttäjän vastuulla olevat laitteet: {{ devices|length }} kpl.</h2>
+
+    {% if devices %}
+        <table cellspacing="10">
+            <thead>
+                <tr>
+                    <th><a href="{{ url_for('devices', sort_by='device_id', sort_order='asc' if sort_order == 'desc' else 'desc') }}">ID</a></th>
+                    <th><a href="{{ url_for('devices', sort_by='type', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Laitetyyppi</a></th>
+                    <th><a href="{{ url_for('devices', sort_by='manufacturer', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Valmistaja</a></th>
+                    <th><a href="{{ url_for('devices', sort_by='model', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Malli</a></th>
+                    <th><a href="{{ url_for('devices', sort_by='location', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Sijainti</a></th>
+                    <th><a href="{{ url_for('devices', sort_by='status', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Status</a></th>
+                    <th><a href="{{ url_for('devices', sort_by='next_maintenance', sort_order='asc' if sort_order == 'desc' else 'desc') }}">Määräpäivä</a></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                    <tr>
+                        <td>{{ device.device_id }}</td>
+                        <td>{{ device.type }}</td>
+                        <td>{{ device.manufacturer }}</td>
+                        <td>{{ device.model }}</td>
+                        <td>{{ device.location }}</td>
+                        <td {% if device.status == "Umpeutunut" %}style="color: red;"{% endif %}>
+                            {{ device.status }}
+                        </td>
+                        <td>{{ device.next_maintenance or '-' }}</td>
+                        <td><a href="{{ url_for('device_details', device_id=device.device_id) }}">Lisätiedot</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Ei laitteita vastuulla</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('list_users') }}">Takaisin käyttäjälistaan</a></p>
+</body>
+</html>

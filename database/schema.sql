@@ -3,7 +3,8 @@ CREATE TABLE users (
     username TEXT UNIQUE NOT NULL,
     password_hash TEXT,
     email TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP
 );
 
 CREATE TABLE devices (

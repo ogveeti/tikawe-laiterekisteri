@@ -36,7 +36,9 @@
                 <td>{{ device.manufacturer }}</td>
                 <td>{{ device.model }}</td>
                 <td>{{ device.location }}</td>
-                <td>{{ device.status }}</td>
+                <td {% if device.status == "Umpeutunut" %}style="color: red;"{% endif %}>
+                    {{ device.status }}
+                </td>
                 <td>{{ device.next_maintenance or '-' }}</td>
                 <td><a href="{{ url_for('device_details', device_id=device.device_id) }}">Lisätiedot</a></td>
             </tr>

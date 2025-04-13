@@ -65,6 +65,7 @@ def login():
 
         session["user_id"] = user[0]["user_id"]
         session["username"] = username
+        db.execute("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = ?", [user[0]["user_id"]])
         return redirect(url_for("devices"))
 
     return render_template("login.html")
@@ -75,6 +76,42 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("index"))
+
+
+#Route for listing all users
+@app.route("/users")
+def list_users():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    users = db.query("SELECT user_id, username FROM users")
+    users = [dict(user) for user in users]
+
+    counts = db.query("SELECT owner_user_id, COUNT(*) AS device_count FROM devices GROUP BY owner_user_id")
+    device_counts = {row["owner_user_id"]: row["device_count"] for row in counts}
+
+    for user in users:
+        user["device_count"] = device_counts.get(user["user_id"], 0)
+
+    return render_template("list_users.html", users=users, user_count=len(users))
+
+
+#Route for showing individual user details
+@app.route("/user/<int:user_id>")
+def user_page(user_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_data = db.query("SELECT username, last_login FROM users WHERE user_id = ?", [user_id])
+    if not user_data:
+        return "VIRHE: Käyttäjää ei löytynyt", 404
+
+    devices = db.query("SELECT * FROM devices WHERE owner_user_id = ?", [user_id])
+    devices = [dict(device) for device in devices]
+    for device in devices:
+        device["status"] = DEVICE_STATUS_MAP.get(device["status"], "Tuntematon status")
+
+    return render_template("user_page.html", user=dict(user_data[0]), devices=devices)
 
 
 #Route for listing and sorting all devices
