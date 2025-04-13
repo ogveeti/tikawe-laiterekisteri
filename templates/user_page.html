@@ -7,7 +7,7 @@
 <body>
     <h1>Käyttäjä: {{ user.username }}</h1>
 
-    <p><strong>Viimeisin kirjautuminen:</strong> {{ user.last_login or "Ei tietoa" }}</p>
+    <p><b>Viimeisin kirjautuminen:</b> {{ user.last_login or "Ei tietoa" }}</p>
 
     <h2>Käyttäjän vastuulla olevat laitteet: {{ devices|length }} kpl.</h2>
 

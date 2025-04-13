@@ -16,14 +16,14 @@
       </div>
   {% endfor %}
 
-<p><strong>Tyyppi:</strong> {{ device.type }}</p>
-<p><strong>Valmistaja:</strong> {{ device.manufacturer }}</p>
-<p><strong>Malli:</strong> {{ device.model }}</p>
-<p><strong>Valmistajan sarjanumero:</strong> {{ device.manufacturer_serial }}</p>
-<p><strong>Sijainti:</strong> {{ device.location }}</p>
-<p><strong>Vastuuhenkilö:</strong> {{ device["owner_name"] }}</p>
-<p><strong>Tila:</strong> {{ device.status }}</p>
-<p><strong>Seuraava ajoitettu toimi:</strong> {{ device.next_maintenance or "Ei määritelty" }}</p>
+<p><b>Tyyppi:</b> {{ device.type }}</p>
+<p><b>Valmistaja:</b> {{ device.manufacturer }}</p>
+<p><b>Malli:</b> {{ device.model }}</p>
+<p><b>Valmistajan sarjanumero:</b> {{ device.manufacturer_serial }}</p>
+<p><b>Sijainti:</b> {{ device.location }}</p>
+<p><b>Vastuuhenkilö:</b> {{ device["owner_name"] }}</p>
+<p><b>Tila:</b> {{ device.status }}</p>
+<p><b>Seuraava ajoitettu toimi:</b> {{ device.next_maintenance or "Ei määritelty" }}</p>
 
 <a href="{{ url_for('edit_device_form', device_id=device['device_id']) }}">Muokkaa</a>
 
