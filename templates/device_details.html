@@ -47,6 +47,8 @@
         <input type="date" name="next_maintenance" value="{{ device.next_maintenance }}">
     </label><br>
 
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+
     <button type="submit">Päivitä</button>
 </form>
 
@@ -54,6 +56,9 @@
 
 <form action="{{ url_for('delete_device', device_id=device.device_id) }}" method="post"
       onsubmit="return confirm('Haluatko varmasti poistaa tämän laitteen?');">
+
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+
     <button type="submit">Poista</button>
 </form><br>
 

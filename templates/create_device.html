@@ -53,6 +53,8 @@
         </select>
     </label><br><br>
 
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+
     <button type="submit">Lisää</button>
     <button type="button" onclick="window.location.href='/list_devices'">Peruuta</button>
 

@@ -3,6 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app_init import app
 from constants import DEVICE_STATUS_MAP
 import db
+import secrets
 
 
 #Route for user registration
@@ -57,6 +58,7 @@ def login():
 
         session["user_id"] = user[0]["user_id"]
         session["username"] = username
+        session["csrf_token"] = secrets.token_hex(16)
         db.execute("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = ?", [user[0]["user_id"]])
         return redirect(url_for("devices"))
 
