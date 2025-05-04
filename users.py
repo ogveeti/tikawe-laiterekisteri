@@ -1,6 +1,6 @@
+from main_app import app
 from flask import request, session, redirect, url_for, render_template, flash
 from werkzeug.security import check_password_hash, generate_password_hash
-from app_init import app
 from constants import DEVICE_STATUS_MAP
 import db
 import secrets

@@ -1,14 +1,28 @@
-from flask import request, session, redirect, url_for, render_template, flash
-from app_init import app
+from flask import session, abort, render_template, request, redirect, url_for, flash, send_from_directory, current_app
+import db
+import os
+from werkzeug.utils import secure_filename
+
+from main_app import app
 from constants import DEVICE_STATUS_MAP
 from datetime import datetime
-import db
+
+
+REPORT_FOLDER = "user_saved_reports"
+ALLOWED_EXTENSIONS = "pdf"
+MAX_FILE_SIZE = 10 * 1024 * 1024  #10MB
+app.config["REPORT_FOLDER"] = REPORT_FOLDER
+
+
+def check_csrf():
+    if request.form["csrf_token"] != session["csrf_token"]:
+        abort(403)
 
 
 #Route for listing and sorting all devices
 @app.route("/list_devices")
 def devices():
-    if "username" not in session:
+    if "user_id" not in session:
         return redirect(url_for("login"))
 
     sort_by = request.args.get("sort_by", "device_id")  #Sort by device_id by default
@@ -44,6 +58,7 @@ def create_device_form():
 def create_device():
     if "user_id" not in session:
         return redirect(url_for("login"))
+    check_csrf()
 
     type = request.form["type"].strip()
     manufacturer = request.form["manufacturer"].strip()
@@ -98,6 +113,9 @@ def create_device():
 #Route for displaying detailed device info
 @app.route("/device/<int:device_id>")
 def device_details(device_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
     sql = """SELECT devices.*,
             users.username AS owner_name
             FROM devices JOIN users 
@@ -112,13 +130,19 @@ def device_details(device_id):
     device = dict(device)
     device["status"] = DEVICE_STATUS_MAP.get(device["status"], "Tuntematon status")
 
-    return render_template("device_details.html", device=device, device_status_map=DEVICE_STATUS_MAP)
+    files = []
+    prefix = f"{device_id}_"
+    for filename in os.listdir(app.config["REPORT_FOLDER"]):
+        if filename.startswith(prefix):
+            files.append(filename)
+
+    return render_template("device_details.html", device=device, device_status_map=DEVICE_STATUS_MAP, files=files)
 
 
 #Route for device information edit form
 @app.route("/devices/<int:device_id>/edit")
 def edit_device_form(device_id):
-    if "username" not in session:
+    if "user_id" not in session:
         return redirect(url_for("login"))
 
     sql = "SELECT * FROM devices WHERE device_id = ?"
@@ -130,6 +154,10 @@ def edit_device_form(device_id):
 #Route for posting the device information editing form
 @app.route("/devices/<int:device_id>/update", methods=["POST"])
 def edit_device(device_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    check_csrf()
+
     type = request.form["type"].strip()
     manufacturer = request.form["manufacturer"].strip()
     model = request.form["model"].strip()
@@ -168,6 +196,10 @@ def edit_device(device_id):
 #Route for posting the device maintenance status update form
 @app.route("/device/<int:device_id>/update_maintenance_status", methods=["POST"])
 def update_maintenance_status(device_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    check_csrf()
+
     try:
         status = int(request.form["status"])
         if status not in DEVICE_STATUS_MAP:
@@ -196,6 +228,10 @@ def update_maintenance_status(device_id):
 #Route for deleting devices
 @app.route("/device/<int:device_id>/delete", methods=["POST"])
 def delete_device(device_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    check_csrf()
+
     # Check if user has the device ownership
     sql = "SELECT owner_user_id FROM devices WHERE device_id = ?"
     result = db.query(sql, [device_id])
@@ -208,3 +244,62 @@ def delete_device(device_id):
     db.execute("DELETE FROM devices WHERE device_id = ?", [device_id])
 
     return redirect(url_for("devices"))
+
+
+#Route for uploading reports for devices
+@app.route("/device/<int:device_id>/upload", methods=["POST"])
+def upload_device_file(device_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    check_csrf()
+
+    if "file" not in request.files:
+        flash("Ei tiedostoa valittuna", "error")
+        return redirect(url_for("device_details", device_id=device_id))
+
+    file = request.files["file"]
+    if file.filename == "":
+        flash("Tiedoston nimi puuttuu", "error")
+        return redirect(url_for("device_details", device_id=device_id))
+
+    if not file or "." not in file.filename or file.filename.rsplit(".", 1)[1].lower() not in ALLOWED_EXTENSIONS:
+        flash("Vain PDF-tiedostot sallittu", "error")
+        return redirect(url_for("device_details", device_id=device_id))
+
+    file.seek(0, os.SEEK_END)
+    size = file.tell()
+    file.seek(0)
+    if size > MAX_FILE_SIZE:
+        flash("Vain alle 10MB kokoiset tiedostot sallittu", "error")
+        return redirect(url_for("device_details", device_id=device_id))
+
+
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config["REPORT_FOLDER"], f"{device_id}_{filename}")
+    file.save(filepath)
+    flash("Tiedosto tallennettu", "success")
+    return redirect(url_for("device_details", device_id=device_id))
+
+
+#Route for showing uploaded reports
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(app.config["REPORT_FOLDER"], filename)
+
+
+#Route for deleting uploaded reports
+@app.route("/device/<int:device_id>/delete_file/<filename>", methods=["POST"])
+def delete_device_file(device_id, filename):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    check_csrf()
+
+    filepath = os.path.join(app.config["REPORT_FOLDER"], f"{device_id}_{filename}")
+    try:
+        os.remove(filepath)
+        flash(f"Tiedosto {filename} poistettu", "success")
+    except FileNotFoundError:
+        flash("Tiedostoa ei löytynyt", "error")
+    except Exception as e:
+        flash(f"Tiedoston poisto epäonnistui: {str(e)}", "error")
+    return redirect(url_for("device_details", device_id=device_id))
