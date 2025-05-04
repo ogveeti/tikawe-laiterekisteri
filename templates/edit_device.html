@@ -48,7 +48,9 @@
     <button type="submit">Tallenna</button>
 </form><br>
 
-<button type="button" onclick="window.location.href='{{ url_for('device_details', device_id=device['device_id']) }}'">Peruuta</button>
+<a href="{{ url_for('device_details', device_id=device['device_id']) }}">
+    <button type="button">Peruuta</button>
+</a>
 
 </body>
 </html>
