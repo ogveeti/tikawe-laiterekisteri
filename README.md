@@ -56,7 +56,7 @@ $ pip install flask
 ```
 - Käynnistä sovellus komennolla:
 ```
-$ flask --app app run
+$ python3 run.py
 ```
 - Avaa sovellus selaimella osoitteessa http://127.0.0.1:5000.
 - Tietokantaan on luotu valmiiksi testidataa ja kaksi testikäyttäjää. Voit kirjautua käyttäjätunnuksilla _testikäyttäjä_ tai _testikäyttäjä2_, käyttäen salasanaa _salasana_. Voit halutessasi luoda myös uuden käyttäjän.
