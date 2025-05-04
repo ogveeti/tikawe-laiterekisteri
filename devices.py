@@ -76,22 +76,22 @@ def create_device():
 
     if not type:
         flash("Laitteen tyyppi on pakollinen")
-        return redirect(url_for("create_device"))
+        return redirect(url_for("create_device_form"))
     if not manufacturer:
         flash("Valmistaja on pakollinen")
-        return redirect(url_for("create_device"))
+        return redirect(url_for("create_device_form"))
     if not model:
         flash("Malli on pakollinen")
-        return redirect(url_for("create_device"))
+        return redirect(url_for("create_device_form"))
     if not manufacturer_serial:
         flash("Sarjanumero on pakollinen")
-        return redirect(url_for("create_device"))
+        return redirect(url_for("create_device_form"))
     if not location:
         flash("Sijainti on pakollinen")
-        return redirect(url_for("create_device"))
+        return redirect(url_for("create_device_form"))
     if not status.isdigit() or int(status) not in DEVICE_STATUS_MAP:
         flash("Valittu tila ei ole kelvollinen")
-        return redirect(url_for("create_device"))
+        return redirect(url_for("create_device_form"))
 
     sql = """INSERT INTO devices (
             type, 
@@ -173,19 +173,19 @@ def edit_device(device_id):
 
     if not type:
         flash("Laitteen tyyppi on pakollinen")
-        return redirect(url_for("edit_device"))
+        return redirect(url_for("edit_device_form", device_id=device_id))
     if not manufacturer:
         flash("Valmistaja on pakollinen")
-        return redirect(url_for("edit_device"))
+        return redirect(url_for("edit_device_form", device_id=device_id))
     if not model:
         flash("Malli on pakollinen")
-        return redirect(url_for("edit_device"))
+        return redirect(url_for("edit_device_form", device_id=device_id))
     if not manufacturer_serial:
         flash("Sarjanumero on pakollinen")
-        return redirect(url_for("edit_device"))
+        return redirect(url_for("edit_device_form"))
     if not location:
         flash("Sijainti on pakollinen")
-        return redirect(url_for("edit_device"))
+        return redirect(url_for("edit_device_form", device_id=device_id))
 
     sql = """UPDATE devices SET 
              type = ?, 
@@ -197,6 +197,7 @@ def edit_device(device_id):
          """
     db.execute(sql, [type, manufacturer, model, manufacturer_serial, location, device_id])
 
+    flash("Laitetiedot päivitetty", "success")
     return redirect(url_for("device_details", device_id=device_id))
 
 
@@ -228,6 +229,7 @@ def update_maintenance_status(device_id):
     sql = "UPDATE devices SET status = ?, next_maintenance = ? WHERE device_id = ?"
     db.execute(sql, [status, next_maintenance, device_id])
 
+    flash("Määräaikaistoimet päivitetty", "success")
     return redirect(url_for("device_details", device_id=device_id))
 
 
