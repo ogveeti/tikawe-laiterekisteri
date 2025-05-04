@@ -23,6 +23,21 @@
 </nav>
 
 <h2>Rekisteröidyt laitteet</h2>
+
+<!-- Search Form -->
+<form action="/list_devices" method="get">
+    <p>
+      Haku:
+      {% if query %}
+        <input type="text" name="query" value="{{ query }}" />
+      {% else %}
+        <input type="text" name="query" />
+      {% endif %}
+    <input type="submit" value="Hae" />
+    </p>
+</form>
+
+<!-- Device List Table -->
 <table cellspacing="10">
     <thead>
         <tr>

@@ -1,16 +1,16 @@
-from flask import session, abort, render_template, request, redirect, url_for, flash, send_from_directory, current_app
-import db
 import os
-from werkzeug.utils import secure_filename
-
-from main_app import app
-from constants import DEVICE_STATUS_MAP
 from datetime import datetime
 
+from flask import session, abort, render_template, request, redirect, url_for, flash, send_from_directory
+from werkzeug.utils import secure_filename
+
+import db
+from constants import DEVICE_STATUS_MAP
+from main_app import app
 
 REPORT_FOLDER = "user_saved_reports"
 ALLOWED_EXTENSIONS = "pdf"
-MAX_FILE_SIZE = 10 * 1024 * 1024  #10MB
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 app.config["REPORT_FOLDER"] = REPORT_FOLDER
 
 
@@ -19,32 +19,39 @@ def check_csrf():
         abort(403)
 
 
-#Route for listing and sorting all devices
+# Route for listing, sorting and searching all devices
 @app.route("/list_devices")
 def devices():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    sort_by = request.args.get("sort_by", "device_id")  #Sort by device_id by default
-    sort_order = request.args.get("sort_order", "asc")  #Ascending order as default
+    query = request.args.get("query")
 
-    #Validate user input
+    sort_by = request.args.get("sort_by", "device_id")
+    sort_order = request.args.get("sort_order", "asc")
+
     if sort_by not in ["device_id", "type", "manufacturer", "status", "location"]:
         sort_by = "device_id"
     if sort_order not in ["asc", "desc"]:
         sort_order = "asc"
 
-    sql = f"SELECT * FROM devices ORDER BY {sort_by} {sort_order}"
-    devices = db.query(sql)
+    if query:
+        sql = f"""SELECT * FROM devices
+                 WHERE type LIKE ? OR manufacturer LIKE ? OR model LIKE ? OR location LIKE ?
+                 ORDER BY {sort_by} {sort_order}"""
+        devices = db.query(sql, [f"%{query}%", f"%{query}%", f"%{query}%", f"%{query}%"])
+    else:
+        sql = f"SELECT * FROM devices ORDER BY {sort_by} {sort_order}"
+        devices = db.query(sql)
 
     devices = [dict(device) for device in devices]
     for device in devices:
         device["status"] = DEVICE_STATUS_MAP.get(device["status"], "Unknown status")
 
-    return render_template("list_devices.html", devices=devices, sort_by=sort_by, sort_order=sort_order)
+    return render_template("list_devices.html", devices=devices, sort_by=sort_by, sort_order=sort_order, query=query)
 
 
-#Route for new device creation form
+# Route for new device creation form
 @app.route("/create_device_form", methods=["GET"])
 def create_device_form():
     if "user_id" not in session:
@@ -53,7 +60,7 @@ def create_device_form():
     return render_template("create_device.html", device_status_map=DEVICE_STATUS_MAP)
 
 
-#Route for handling new device creation
+# Route for handling new device creation
 @app.route("/create_device", methods=["POST"])
 def create_device():
     if "user_id" not in session:
@@ -110,7 +117,7 @@ def create_device():
     return redirect(url_for("devices"))
 
 
-#Route for displaying detailed device info
+# Route for displaying detailed device info
 @app.route("/device/<int:device_id>")
 def device_details(device_id):
     if "user_id" not in session:
@@ -139,7 +146,7 @@ def device_details(device_id):
     return render_template("device_details.html", device=device, device_status_map=DEVICE_STATUS_MAP, files=files)
 
 
-#Route for device information edit form
+# Route for device information edit form
 @app.route("/devices/<int:device_id>/edit")
 def edit_device_form(device_id):
     if "user_id" not in session:
@@ -151,7 +158,7 @@ def edit_device_form(device_id):
     return render_template("edit_device.html", device=device)
 
 
-#Route for posting the device information editing form
+# Route for posting the device information editing form
 @app.route("/devices/<int:device_id>/update", methods=["POST"])
 def edit_device(device_id):
     if "user_id" not in session:
@@ -193,7 +200,7 @@ def edit_device(device_id):
     return redirect(url_for("device_details", device_id=device_id))
 
 
-#Route for posting the device maintenance status update form
+# Route for posting the device maintenance status update form
 @app.route("/device/<int:device_id>/update_maintenance_status", methods=["POST"])
 def update_maintenance_status(device_id):
     if "user_id" not in session:
@@ -218,14 +225,13 @@ def update_maintenance_status(device_id):
     else:
         next_maintenance = None
 
-
     sql = "UPDATE devices SET status = ?, next_maintenance = ? WHERE device_id = ?"
     db.execute(sql, [status, next_maintenance, device_id])
 
     return redirect(url_for("device_details", device_id=device_id))
 
 
-#Route for deleting devices
+# Route for deleting devices
 @app.route("/device/<int:device_id>/delete", methods=["POST"])
 def delete_device(device_id):
     if "user_id" not in session:
@@ -246,7 +252,7 @@ def delete_device(device_id):
     return redirect(url_for("devices"))
 
 
-#Route for uploading reports for devices
+# Route for uploading reports for devices
 @app.route("/device/<int:device_id>/upload", methods=["POST"])
 def upload_device_file(device_id):
     if "user_id" not in session:
@@ -273,7 +279,6 @@ def upload_device_file(device_id):
         flash("Vain alle 10MB kokoiset tiedostot sallittu", "error")
         return redirect(url_for("device_details", device_id=device_id))
 
-
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config["REPORT_FOLDER"], f"{device_id}_{filename}")
     file.save(filepath)
@@ -281,13 +286,13 @@ def upload_device_file(device_id):
     return redirect(url_for("device_details", device_id=device_id))
 
 
-#Route for showing uploaded reports
+# Route for showing uploaded reports
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config["REPORT_FOLDER"], filename)
 
 
-#Route for deleting uploaded reports
+# Route for deleting uploaded reports
 @app.route("/device/<int:device_id>/delete_file/<filename>", methods=["POST"])
 def delete_device_file(device_id, filename):
     if "user_id" not in session:
